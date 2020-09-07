@@ -76,7 +76,7 @@ def set_sensor_threshold(threshold_value):
 def get_sensor_threshold():
     return global_value.threshold
 
-def find_max(a):
+def find_max(a, m=2):
     try:
         list_0 = [a[i].magnitude() for i in range(len(a))]
     except:
@@ -85,15 +85,15 @@ def find_max(a):
     indent = list_0.index(max_value)
 
     try:
-        x = a[indent].x()*2
-        y = a[indent].y()*2
-        r = a[indent].r()*2
+        x = a[indent].x()*m
+        y = a[indent].y()*m
+        r = a[indent].r()*m
         tuple_0 = (x, y, r)
     except:
-        xmin = a[indent][0]*2
-        ymin = a[indent][1]*2
-        w = a[indent][2]*2
-        h = a[indent][3]*2
+        xmin = a[indent][0]*m
+        ymin = a[indent][1]*m
+        w = a[indent][2]*m
+        h = a[indent][3]*m
         x_cent = (xmin + int(w/2))
         y_cent = (ymin + int(h/2))
         tuple_0 = (x_cent, y_cent, w, h)
@@ -188,7 +188,7 @@ class CircleDetection(Detection):
 
         if len(circle_list) > 0:
             circle_tuple = find_max(circle_list)
-            global_value.img_global.draw_string(8, rows[self.row], ("Circle: %d %d %d" %(circle_tuple[0],circle_tuple[1],circle_tuple[2])), color=(0xff, 0xff, 0xff), scale=2, mono_space=False)
+            global_value.img_global.draw_string(8, rows[self.row], ("Circle: %d %d %d" %(circle_tuple[0],circle_tuple[1],circle_tuple[2])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
         lcd.display(img)
         return circle_list
 
@@ -207,7 +207,7 @@ class RectangleDetection(Detection):
 
         if len(rectangle_list) > 0:
             rectangle_tuple = find_max(rectangle_list)
-            global_value.img_global.draw_string(8, rows[self.row], ("Rect: %d,%d,%d,%d" % (rectangle_tuple[0],rectangle_tuple[1],rectangle_tuple[2],rectangle_tuple[3])), color=(0xff, 0xff, 0xff), scale=2, mono_space=False)
+            global_value.img_global.draw_string(8, rows[self.row], ("Rect: %d,%d,%d,%d" % (rectangle_tuple[0],rectangle_tuple[1],rectangle_tuple[2],rectangle_tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
         lcd.display(img)
         return rectangle_list
 
@@ -238,7 +238,7 @@ class FaceDetection(Detection):
 
         if len(faces_list) > 0:
             face_tuple = find_max(faces_list)
-            global_value.img_global.draw_string(8, rows[self.row], ("Face: %d,%d,%d,%d" % (face_tuple[0],face_tuple[1],face_tuple[2],face_tuple[3])), color=(0xff, 0xff, 0xff), scale=2, mono_space=False)
+            global_value.img_global.draw_string(8, rows[self.row], ("Face: %d,%d,%d,%d" % (face_tuple[0],face_tuple[1],face_tuple[2],face_tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
         lcd.display(img)
         del(img)
         return faces_list
@@ -285,19 +285,15 @@ class ColorTracking(object):
                 img.draw_cross(blob.cx(), blob.cy())
 
             if len(object_list) > 0:
-                object_tuple = find_max(object_list)
-                global_value.img_global.draw_string(8, rows[self.row], ("Object: %d,%d,%d,%d" % (object_tuple[0], object_tuple[1], object_tuple[2], object_tuple[3])), color=(0xff, 0xff, 0xff), scale=2, mono_space=False)
-            lcd.display(img)
+                object_tuple = find_max(object_list, m=1)
+                global_value.img_global.draw_string(8, rows[self.row], ("Object: %d,%d,%d,%d" % (object_tuple[0], object_tuple[1], object_tuple[2], object_tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+                lcd.display(img)
+                if argu == 0: # (x_cent, y_cent, w, h)
+                    return object_tuple
+                else:
+                    return object_tuple[argu-1]
 
-            if len(object_list) is 0:
-                return (0)
-
-            object_tuple = find_max(object_list)
-            if argu == 0: # (x_cent, y_cent, w, h)
-                return object_tuple
-            else:
-                return object_tuple[argu-1]
-
+        lcd.display(img)
         return (0)
 
 class ColorRecognition:

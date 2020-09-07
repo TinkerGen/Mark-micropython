@@ -4,10 +4,6 @@ import KPU as kpu
 import gc
 import ujson
 
-from Maix import utils
-utils.gc_heap_size(900000)
-
-
 dict_add = {}
 class OnDeviceTraining(object):
     def __init__(self, categoryname=[], samplesnumber=15, bool=False):
@@ -40,13 +36,11 @@ class OnDeviceTraining(object):
     
     def classify_image(self, string):
         img = snapshot()
-        img_copy = img.resize(224,224)
-        self.img_copy = img_copy
-        a = img_copy.pix_to_ai()
-        a = img.draw_string(0, rows[self.row], string, color=(255,255,255), scale=2, mono_space=False)
+        self.img_copy = img.resize(224,224)
+        a = self.img_copy.pix_to_ai()
+        a = img.draw_string(0, rows[self.row], string, color=(255,255,255), scale=1.5, mono_space=False)
         a = lcd.display(img)
         del(img)
-        del(img_copy)
         gc.collect()
 
     # parameter 1-5
@@ -68,21 +62,24 @@ class OnDeviceTraining(object):
             if self.cap_num >= self.classnumber + self.samplesnumber:
                 print("start train")
                 img = snapshot()
-                a = img.draw_string(lcd.width()//2-68,lcd.height()//2-4, "Training...", color=(0,255,0), scale=4, mono_space=False)
+                a = img.draw_string(lcd.width()//2-68,lcd.height()//2-4, "Training...", color=(0,255,0), scale=3, mono_space=False)
                 lcd.display(img)
+                del(img)
+                #del(self.img_copy)
+                gc.collect()
                 time.sleep(2)
                 self.classifier.train()
                 print("train end")
                 self.train_status = 1
-                gc.collect()
 
     def class_predict(self, THRESHOLD=50):
         img = snapshot()
-        img_copy = img.resize(224,224)
-        a = img_copy.pix_to_ai()
+        self.img_copy = img.resize(224,224)
+        #kpu.memtest()
+        a = self.img_copy.pix_to_ai()
         res_index = -1
         try:
-            res_index, min_dist = self.classifier.predict(img_copy)
+            res_index, min_dist = self.classifier.predict(self.img_copy)
             self.percent = round(min_dist, 0)
             #print(" percent:",self.percent)
             #print("res_index: ", res_index)
@@ -95,7 +92,8 @@ class OnDeviceTraining(object):
 
         a = lcd.display(img)
         del(img)
-        del(img_copy)
+        #del(img_copy)
+        gc.collect()
 
     def save_model_file(self, filename=''):
         self.classifier.save(filename)
@@ -117,6 +115,7 @@ class OnDeviceTraining(object):
     def get_classification_result(self, percent):
         threshold = percent/100
         self.class_predict(threshold)
+        #gc.collect()
         if self.percent >= threshold:
             return self.image_class
         else:
@@ -161,5 +160,6 @@ while True:
     modeltrain.is_class('a', 20)
 
 """
+
 
 

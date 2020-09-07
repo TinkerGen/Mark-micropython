@@ -2,8 +2,6 @@ from camera import snapshot, global_value, rows
 import image, lcd, time
 import KPU as kpu
 import gc
-from Maix import utils
-utils.gc_heap_size(900000)
 
 class ImageClassification(object):
     def __init__(self, FileName, Label, bool=False):
@@ -29,7 +27,7 @@ class ImageClassification(object):
         self.percent = pmax
         if self.percent >= threshold:
             max_index=plist.index(pmax)
-            a = img.draw_string(8, rows[self.row], ("Result: %s %%: %.2f" % (self.labels[max_index].strip(), pmax)), color=(255,255,255), scale=2, mono_space=False)
+            a = img.draw_string(8, rows[self.row], ("Result: %s %%: %.2f" % (self.labels[max_index].strip(), pmax)), color=(255,255,255), scale=1.5, mono_space=False)
             self.image_class = self.labels[max_index].strip()
         a = lcd.display(img)
         del(img)

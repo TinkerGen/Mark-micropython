@@ -21,6 +21,7 @@ class ObjectDetection(object):
             pass
         
     def detect_objects(self, threshold):
+        detected = False
         img = snapshot()
         img_copy = img.resize(224,224)
         a = img_copy.pix_to_ai()
@@ -28,20 +29,23 @@ class ObjectDetection(object):
         if code:
             for i in code:
                 if i.value() >= threshold:
+                    detected = True
                     roi = (int(i.x()*1.07), int(i.y()*1.42), int(i.w()*1.07),int(i.h()*1.42))
                     a=img.draw_rectangle(roi, color = (0x1c, 0xa2, 0xff), thickness=2)
                     self.x_center = int((i.x() + i.w()/2)*1.07)
                     self.y_center = int((i.y() + i.h()/2)*1.42)
                     self.percent = i.value()
                     self.object_detected = self.classes[i.classid()]
-                    a = img.draw_string(8, rows[self.row], ("Result: %s %%: %.2f" % (self.object_detected, self.percent)), color=(255,255,255), scale=2, mono_space=False)
-            a = lcd.display(img)
+                    a = img.draw_string(8, rows[self.row], ("Result: %s %%: %.2f" % (self.object_detected, self.percent)), color=(255,255,255), scale=1.5, mono_space=False)
+                    
+        a = lcd.display(img)
+        del(img)
+        del(img_copy)  
+        if detected:
+            pass
         else:
             self.object_detected = None
             self.percent = -1
-            a = lcd.display(img)
-        del(img)
-        del(img_copy)
 
     def get_detection_results(self, percent):
         threshold = percent/100
@@ -69,6 +73,7 @@ class ObjectDetection(object):
                 return self.y_center
         else:
             return -1
+
 
 '''
 traffic_classes = ["limit_5","limit_80","no_forward","forward","left","right","u_turn","zebra","stop","yield"]
