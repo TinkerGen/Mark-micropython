@@ -12,7 +12,7 @@ def exception_output(e):
     num_rows = len(str(e))//30+1
     for i in range(num_rows):
     	lcd.draw_string(0,i*15, str(e)[i*30:i*30+30], lcd.RED, lcd.BLACK)
-    time.sleep(10)
+    time.sleep(5)
 
 try:
     first_boot = "first_boot" in os.listdir("/flash")

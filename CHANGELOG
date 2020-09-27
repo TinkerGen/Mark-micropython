@@ -33,3 +33,9 @@
 5) upgraded firmware to commit e1ebb56db6457b1a4da072ed5cba44e22b6be06a
 6) fixed config loading from SPIFFS - now always uses default config
 7) increased aggressiveness of gc, helps allivate memory problems
+
+20200924：cyberEye-20200924-2000.3000.4000.5014.kfpkg
+1) fixed bug in color detection, moved color detection from RGB to LAB colorspace
+2) added lego detection model to address 0x900000
+3) changed preloaded mode logic
+4) changed startup pictures from static to generated

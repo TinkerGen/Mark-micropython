@@ -100,33 +100,25 @@ def find_max(a, m=2):
 
     return tuple_0
 
-counter = 0
-Tcurcounter = 0
-def compare_lists(list1, list2, list3):
-    global counter
-    global Tcurcounter
-    for i in range(len(list1)):
-        if (list1[i] <= list2[i]):
-            counter = counter - 1
-    for q in range(len(list1)):
-        if (list1[q] >= list3[q]):
-            Tcurcounter = Tcurcounter + 1
+def compare_lists(real, std):
+    result = True
+    print(std)
+    print(real)
+    for i in [0, 2, 4]:
+        if (std[i] <= real[i]):
+            pass
+        else:
+            print("false: i", i)
+            result = False
+            
+    for q in [1, 3, 5]:
+        if (std[q] >= real[q]):
+            pass
+        else:
+            print("false: q", q)
+            result = False
 
-    if ((counter <= - 3) and (Tcurcounter >= 3)):
-        counter = 0
-        Tcurcounter = 0
-        return True
-    else:
-        counter = 0
-        Tcurcounter = 0
-        return False
-
-def is_color(rgb):
-    rgb_ratio = [0, 0, 0]
-    color_max=max(rgb)
-    for item in range(len(rgb)):
-        rgb_ratio[item] = rgb[item] / color_max
-    return rgb_ratio
+    return result
 
 # random
 def define_random(value_one, value_two):
@@ -298,26 +290,21 @@ class ColorTracking(object):
 
 class ColorRecognition:
 
-    red_max = [1.0, 0.65, 0.65]
-    red_min = [1.0, 0.21, 0.20]
-    green_max = [0.75, 1.0, 0.80]
-    green_min = [0.25, 1.0, 0.30]
-    blue_max = [0.55, 0.78, 1.0]
-    blue_min = [0.00, 0.35, 1.0]
-    yellow_max = [0.98, 1.0, 0.85]
-    yellow_min = [0.7, 1.0, 0.60]
-    cyan_max = [0.75, 1.0, 1.0]
-    cyan_min = [0.45, 0.90, 1.0]
-    purple_max = [0.82, 0.80, 1.0]
-    purple_min = [0.63, 0.40, 0.88]
-
-    rgb_radio = [0, 0, 0]
-    rgb_value = (0, 0, 0)
-
     def __init__(self):
-        pass
+        self.red = (10, 60, -2, 30, -6, 25) 
+        self.green = (5, 70, -15, 5, -6, 22)
+        self.blue = (10, 35, -6, 12, -23, -11)
+        self.yellow = (20, 45, -15, 11, -2, 25)
+        self.cyan = (20, 58, -15, 1, -6, 1)
+        self.purple = (5, 43, -4, 36, -37, 2)
+        self.black = (0, 50, -6, 10, -31, 14)
+        self.white = (20, 84, -6, 10, -31, 2)
 
     def recognize_color(self, recognize_type, argu):
+    
+        self.threshold = [0]*6 # Middle L, A, B values.
+        self.rgb_value = (0, 0, 0)
+        
         if recognize_type == 1:#max_circle
             dete_type = circle_detection.get_detection_property(0)
         elif recognize_type == 2:#max_rectangle
@@ -336,9 +323,19 @@ class ColorRecognition:
             Xmin = dete_type[0]-int(w/2)
             Ymin = dete_type[1]-int(h/2)
             area = (Xmin, Ymin, w, h)
-        hist = global_value.img_global.get_statistics(bins=32,roi=area)
-        self.rgb_value = image.lab_to_rgb((hist.l_mean(),hist.a_mean(),hist.b_mean()))
-        self.rgb_radio = is_color(list(self.rgb_value))
+            
+        hist = global_value.img_global.get_histogram(bins=32, roi=area)
+        stat = hist.get_statistics()
+        self.rgb_value = image.lab_to_rgb((stat.l_mean(),stat.a_mean(),stat.b_mean()))
+        lo = hist.get_percentile(0.1) 
+        hi = hist.get_percentile(0.9) 
+        # Average in percentile values.
+        self.threshold[0] = (self.threshold[0] + lo.l_value()) // 2
+        self.threshold[1] = (self.threshold[1] + hi.l_value()) // 2
+        self.threshold[2] = (self.threshold[2] + lo.a_value()) // 2
+        self.threshold[3] = (self.threshold[3] + hi.a_value()) // 2
+        self.threshold[4] = (self.threshold[4] + lo.b_value()) // 2
+        self.threshold[5] = (self.threshold[5] + hi.b_value()) // 2
 
         if argu == 1:
             return self.rgb_value[0]
@@ -349,34 +346,38 @@ class ColorRecognition:
         elif argu == 4:
             return self.rgb_value
 
-        elif argu == 5:# red(214, 140, 136)
-            rgbstatus = compare_lists(self.rgb_radio, self.red_max, self.red_min)
+        elif argu == 5: #red
+            rgbstatus = compare_lists(self.threshold, self.red)
             return rgbstatus
-        elif argu == 6:# green(105, 165, 123)
-            rgbstatus = compare_lists(self.rgb_radio, self.green_max, self.green_min)
+        elif argu == 6: #green
+            rgbstatus = compare_lists(self.threshold, self.green)
             return rgbstatus
-        elif argu == 7:# blue(92, 90, 166)
-            rgbstatus = compare_lists(self.rgb_radio, self.blue_max, self.blue_min)
+        elif argu == 7: #blue
+            rgbstatus = compare_lists(self.threshold, self.blue)
             return rgbstatus
-        elif argu == 8:# yellow(200, 215, 173)
-            rgbstatus = compare_lists(self.rgb_radio, self.yellow_max, self.yellow_min)
+        elif argu == 8: #yellow
+            rgbstatus = compare_lists(self.threshold, self.yellow)
             return rgbstatus
-        elif argu == 9:# Cyan(116, 165, 182)
-            rgbstatus = compare_lists(self.rgb_radio, self.cyan_max, self.cyan_min)
+        elif argu == 9: #cyan
+            rgbstatus = compare_lists(self.threshold, self.cyan)
             return rgbstatus
-        elif argu == 10:# purple(150, 114, 152)
-            rgbstatus = compare_lists(self.rgb_radio, self.purple_max, self.purple_min)
+        elif argu == 10: #purple
+            rgbstatus = compare_lists(self.threshold, self.purple)
             return rgbstatus
-        elif argu == 11:# black(71, 78, 85)
-            if (self.rgb_value[0] < 100 and self.rgb_value[1] < 100 and self.rgb_value[2] < 100):
-                return True
-            else:
-                return False
+        elif argu == 11: #black
+            rgbstatus = compare_lists(self.threshold, self.black)
+            return rgbstatus
+            #if (self.rgb_value[0] < 100 and self.rgb_value[1] < 100 and self.rgb_value[2] < 100):
+            #    return True
+            #else:
+            #    return False
         elif argu == 12:# white(234, 242, 240)
-            if (self.rgb_value[0] > 165 and self.rgb_value[1] > 165 and self.rgb_value[2] > 165):
-                return True
-            else:
-                return False
+            rgbstatus = compare_lists(self.threshold, self.white)
+            return rgbstatus
+            #if (self.rgb_value[0] > 165 and self.rgb_value[1] > 165 and self.rgb_value[2] > 165):
+            #    return True
+            #else:
+            #    return False
 
 # line_following
 class Global_GRAYSCALE_THRESHOLD:
@@ -457,7 +458,7 @@ rectangle_detection=RectangleDetection()
 #rectangle_detection=RectangleDetection()
 #face_detection=FaceDetection()
 #color_tracking = ColorTracking()
-#color_recognition = ColorRecognition()
+color_recognition = ColorRecognition()
 
 #0 - tuple, then the same for detections
 #color_tracking.initialize_color_tracking()
@@ -470,7 +471,7 @@ while True:
 
     #rectangle_detection.get_detection_status()
     #rectangle_detection.get_detection_property(0) #maxtuple 0 1 2 3 4
-    #color_recognition.recognize_color(2, 5) #check for red circle
+    print(color_recognition.recognize_color(1, 6)) #check for red circle
 
 
     #face_detection.get_detection_status()
@@ -479,7 +480,5 @@ while True:
     #color_tracking.get_object_property(color_tracking.threshold, 0) #maxtuple 0 1 2 3 4
     #draw_circle(300, 200, 10)
     #draw_rectangle_wh(100, 50, 160, 120)
-    draw_rectangle_minmax(110, 70, 210, 105)
-
+    #draw_rectangle_minmax(110, 70, 210, 105)
 """
-

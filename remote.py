@@ -5,6 +5,13 @@ from maix_motor import Maix_motor
 from fpioa_manager import fm, board_info
 import ujson
 
+lcd.display(image.Image('logo.jpg'))
+msg = 'Open Code&Robots APP, enter your WiFi credentials and scan the resulting QR code with MARK camera'
+num_rows = len(msg)//28
+for i in range(num_rows+3):
+	lcd.draw_string(5, i*15, msg[i*28:i*28+28], lcd.RED, lcd.WHITE)
+time.sleep(2)
+
 ########## config ################
 WIFI_SSID = 0
 WIFI_PASSWD = 0
@@ -23,26 +30,21 @@ fm.register(28,fm.fpioa.GPIOHS13)#mosi
 fm.register(26,fm.fpioa.GPIOHS14)#miso
 fm.register(27,fm.fpioa.GPIOHS15)#sclk
 
-clock = time.clock()
-lcd.init()
-lcd.rotation(1)
+#lcd.init()
+
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.set_vflip(2)
-
-lcd.display(image.Image('remote.jpg'))
-time.sleep(1)
+lcd.rotation(1)
 
 nic = network.ESP32_SPI(cs=fm.fpioa.GPIOHS10,rst=fm.fpioa.GPIOHS11,rdy=fm.fpioa.GPIOHS12, mosi=fm.fpioa.GPIOHS13,miso=fm.fpioa.GPIOHS14,sclk=fm.fpioa.GPIOHS15)
 print("ESP32_SPI firmware version:", nic.version())
-
 
 while not WIFI_SSID:
     img = sensor.snapshot()
     a = img.replace(vflip=True, hmirror=False, transpose=True)
     res = img.find_qrcodes()
-    fps =clock.fps()
     if len(res) > 0:
         a= img.draw_string(2,2, res[0].payload(), color=(0,255,0), scale=1)
         payload = res[0].payload()
@@ -106,7 +108,6 @@ def control_motors(data):
     Maix_motor.servo_angle(2, tilt_angle)
     Maix_motor.servo_angle(3, bullet)
 
-
 def send_buffer(sock, data, buf_size):
     block = int(len(img_bytes)/buf_size)
     send_len = 0
@@ -115,7 +116,6 @@ def send_buffer(sock, data, buf_size):
         send_len += send_len
     send_len += sock.send(img_bytes[block*buf_size:])
     return send_len
-
 
 while True:
 
@@ -133,8 +133,6 @@ while True:
     count = 0
     err   = 0
     while True:
-        clock.tick()
-
         if err >=10:
             print("socket broken")
             break
