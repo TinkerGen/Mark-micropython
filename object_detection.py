@@ -2,6 +2,23 @@ from camera import snapshot, global_value, rows
 import image, lcd, time
 import KPU as kpu
 
+
+def find_max(a, m=[1.07,1.42]):
+
+    list_0 = [a[i].w()*a[i].h() for i in range(len(a))]
+    max_value = max(list_0)
+    indent = list_0.index(max_value)
+
+    xmin = a[indent].x()*m[0]
+    ymin = a[indent].y()*m[1]
+    w = a[indent].w()*m[0]
+    h = a[indent].h()*m[1]
+    x_cent = xmin + int(w/2)
+    y_cent = ymin + int(h/2)
+
+    return int(x_cent), int(y_cent), int(w*h), a[indent].value(), a[indent].classid()
+
+
 class ObjectDetection(object):
     def __init__(self, FileName, Classes, Anchor, bool=False):
         self.row = global_value.row
@@ -30,14 +47,15 @@ class ObjectDetection(object):
             for i in code:
                 if i.value() >= threshold:
                     detected = True
-                    roi = (int(i.x()*1.07), int(i.y()*1.42), int(i.w()*1.07),int(i.h()*1.42))
+                    new_x, new_y = int(i.x()*1.07), int(i.y()*1.42)
+                    roi = (new_x, new_y, int(i.w()*1.07),int(i.h()*1.42))
                     a=img.draw_rectangle(roi, color = (0x1c, 0xa2, 0xff), thickness=2)
-                    self.x_center = int((i.x() + i.w()/2)*1.07)
-                    self.y_center = int((i.y() + i.h()/2)*1.42)
-                    self.percent = i.value()
-                    self.object_detected = self.classes[i.classid()]
-                    a = img.draw_string(8, rows[self.row], ("Result: %s %%: %.2f" % (self.object_detected, self.percent)), color=(255,255,255), scale=1.5, mono_space=False)
-                    
+                    percent = i.value()
+                    object_detected = self.classes[i.classid()]
+                    a = img.draw_string(new_x, new_y-14, ("%s %%: %.2f" % (self.object_detected, self.percent)), color=(255,255,255), scale=1.5, mono_space=False)
+            self.x_center, self.y_center, self.area, self.percent, self.object_detected  = find_max(code)
+            self.object_detected = self.classes[self.object_detected]
+            
         a = lcd.display(img)
         del(img)
         del(img_copy)  
@@ -63,7 +81,7 @@ class ObjectDetection(object):
         else:
             return False
 
-    def get_object_center_position(self, _object, percent, argu):
+    def get_object_property(self, _object, percent, argu):
         threshold = percent/100
         self.detect_objects(threshold)
         if self.object_detected == _object and self.percent >= threshold:
@@ -71,11 +89,12 @@ class ObjectDetection(object):
                 return self.x_center
             elif argu == 2:
                 return self.y_center
+            elif argu == 3:
+                return self.area
         else:
             return -1
 
-
-'''
+"""
 traffic_classes = ["limit_5","limit_80","no_forward","forward","left","right","u_turn","zebra","stop","yield"]
 traffic_anchor = (0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828)
 traffic_filename = 0x400000
@@ -85,13 +104,13 @@ number_anchor = (0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282,
 number_filename = 0x600000
 
 traffic = ObjectDetection(traffic_filename, traffic_classes, traffic_anchor, 1)
-number = ObjectDetection(number_filename, number_classes, number_anchor, 1)
+#number = ObjectDetection(number_filename, number_classes, number_anchor, 1)
 while True:
-    #traffic.get_detection_results(70)
-    #traffic.is_object('limit_5',50)
-	#traffic.get_object_center_position('right',50, 1)
+    #traffic.get_detection_results(10)
+    #traffic.is_object('stop', 30)
+	print(traffic.get_object_property('stop', 50, 3))
 
     #number.get_detection_results(50)
     #number.is_object('0',50)
-	number.get_object_center_position('0',30, 1)
-'''
+	#number.get_object_property('0',30, 1)
+"""

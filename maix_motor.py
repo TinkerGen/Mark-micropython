@@ -23,7 +23,7 @@ class MaixS:
         # i2c_device.writeto(0x58, bytearray([3,-100,-100,16,39]))
 
     def servo_angle(self, _servo, _angle):
-        if _servo <= 4 and _servo > 0 and _angle < 180:
+        if _servo <= 4 and _servo > 0 and _angle <= 180:
             cmd = bytearray([2, _servo-1, _angle])
             self.write(cmd)
             time.sleep(.001)

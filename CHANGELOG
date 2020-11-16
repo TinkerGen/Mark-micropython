@@ -1,15 +1,15 @@
-20200421：cyberEye-20200421-2000.3000.4000.5009.kfpkg
+20200421: cyberEye-20200421-2000.3000.4000.5009.kfpkg
 1) fixed Out of normal Micropython memory when running NN models
 2) improved analog read function, improved face detection function
 
-20200526：cyberEye-20200526-2000.3000.4000.5010.kfpkg
+20200526: cyberEye-20200526-2000.3000.4000.5010.kfpkg
 1) Changed default behavior for SD card - not loading boot.py from SD
 2) Temporary fixed out of MP heap memory bug for image classification models
 3) Changed all models kmodel version to v4. Traffic signs updated to detect Intl stop and yield signs. Numbers model can detect 0 now. Accuracy improvement for all models.
 4) Added pre-loaded start up code (updated user.py)
 5) support draw_string_rotation.
 
-20200703：cyberEye-20200703-2000.3000.4000.5011.kfpkg
+20200703: cyberEye-20200703-2000.3000.4000.5011.kfpkg
 1) threshold value for find_rects 
 2) number of frames for color tracking, auto_gain, auto_whitebal, display image when learning hist 
 3) only show one value in rects_detect, circle_detect 
@@ -17,15 +17,15 @@
 5) full screen mode 
 6) interface changes for multi-model inference 
 7) on device training support (KS stretch goal) 
-8) threshold value for find_rects OK
-9) number of frames for color tracking, auto_gain, auto_whitebal, display image when learning hist OK
-10) only show one value in rects_detect, circle_detect OK
-11) dynamic setting of confidence threshhold for object detection OK
+8) threshold value for find_rects
+9) number of frames for color tracking, auto_gain, auto_whitebal, display image when learning hist
+10) only show one value in rects_detect, circle_detect
+11) dynamic setting of confidence threshhold for object detection
 
-20200713：cyberEye-20200713-2000.3000.4000.5012.kfpkg
+2020071: cyberEye-20200713-2000.3000.4000.5012.kfpkg
 1) fixed Out of normal Micropython memory when using object detection models after flashing a new firmware
 
-20200907：cyberEye-20200907-2000.3000.4000.5013.kfpkg
+20200907: cyberEye-20200907-2000.3000.4000.5013.kfpkg
 1) fixed bug causing detections not being overwritten
 2) added APP mode
 3) fixed bug in model calibration pre-processing, accuracy increased
@@ -34,8 +34,20 @@
 6) fixed config loading from SPIFFS - now always uses default config
 7) increased aggressiveness of gc, helps allivate memory problems
 
-20200924：cyberEye-20200924-2000.3000.4000.5014.kfpkg
+20200924: cyberEye-20200924-2000.3000.4000.5014.kfpkg
 1) fixed bug in color detection, moved color detection from RGB to LAB colorspace
 2) added lego detection model to address 0x900000
 3) changed preloaded mode logic
 4) changed startup pictures from static to generated
+
+20201013: cyberEye-20201013-2000.3000.4000.5015.kfpkg
+1) fixed bug when dht11 outputting an empty string if timeout
+
+20201104 : cyberEye-20201104-2000.3000.4000.5016.kfpkg
+1) in case of multiple detections model inference should return the result with biggest area of ​​detection DONE
+2) minor interfaces changes in Codecraft(knapsack->backpack, smartphone->smartphone, etc) 
+3) fix for servo not accepting 180 degrees angle
+4) Added AprilTags to Codecraft
+5) Added display picture/simple graphics block
+6) Increased distance for object detection 
+7) Added area output parameter to detection blocks

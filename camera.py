@@ -21,6 +21,12 @@ def get_img():
         img = global_value.img_global
     return img
 
+def load_img(pic_path):
+    img = image.Image(pic_path)
+    img = img.resize(240,320)
+    lcd.display(img)
+    del(img)
+
 def draw_circle(x, y, r):
     img = get_img()
     img.draw_circle(x, y, r, color = (255, 0, 0), thickness = 2, fill = False)
@@ -88,7 +94,8 @@ def find_max(a, m=2):
         x = a[indent].x()*m
         y = a[indent].y()*m
         r = a[indent].r()*m
-        tuple_0 = (x, y, r)
+        a = int(math.pow(r, 2)*math.pi)
+        tuple_0 = (x, y, r, a)
     except:
         xmin = a[indent][0]*m
         ymin = a[indent][1]*m
@@ -96,7 +103,8 @@ def find_max(a, m=2):
         h = a[indent][3]*m
         x_cent = (xmin + int(w/2))
         y_cent = (ymin + int(h/2))
-        tuple_0 = (x_cent, y_cent, w, h)
+        a = w*h
+        tuple_0 = (x_cent, y_cent, w, h, a)
 
     return tuple_0
 
@@ -108,14 +116,14 @@ def compare_lists(real, std):
         if (std[i] <= real[i]):
             pass
         else:
-            print("false: i", i)
+            #print("false: i", i)
             result = False
             
     for q in [1, 3, 5]:
         if (std[q] >= real[q]):
             pass
         else:
-            print("false: q", q)
+            #print("false: q", q)
             result = False
 
     return result
@@ -140,28 +148,53 @@ class Detection:
     def __init__(self):
         self.row = global_value.row
         global_value.row = global_value.row + 1
-
+        
     def get_detection_result(self):
         pass
     
-    def get_detection_status(self):
-        _list = self.get_detection_result()
+    def get_detection_status(self, *args):
+        self._tuple = None
+        _list = self.get_detection_result(*args)
         if _list:
             return True
         else:
             return False
     
-    def get_detection_property(self, argu):
-        _list = self.get_detection_result()
+    def get_detection_property(self, _type, *args):
+        self._tuple = None
+        _list = self.get_detection_result(*args)
         if not _list:
             return (0)
-    
-        _tuple = find_max(_list)
 
-        if argu == 0:
-            return _tuple
+        if _type == 0:
+            return _list
         else:
-            return _tuple[argu-1]
+            return _list[_type-1]
+
+class AprilTagDetection(Detection):
+
+    def get_detection_result(self, tag_id):
+        img = snapshot()
+        global_value.img_global = img
+        img_copy = img.resize(120,160)
+        img_copy = img_copy.to_grayscale()
+
+        tag_list = img_copy.find_apriltags(families=image.TAG36H11)
+        
+        for t in tag_list:
+                img.draw_rectangle((t.x()*2,t.y()*2, t.w()*2, t.h()*2), color = (255, 0, 0), thickness=2)
+                img.draw_cross(t.cx()*2, t.cy()*2, color = (0, 255, 0), thickness=2)
+                if t.id() != tag_id:
+                    tag_list.remove(t)
+                    
+        if len(tag_list) > 0:
+            self._tuple = find_max(tag_list)
+            global_value.img_global.draw_string(8, rows[self.row], ("Tag: %d,%d,%d,%d" %(self._tuple[0], self._tuple[1], self._tuple[2], self._tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            
+        lcd.display(img)
+        del(img)
+        del(img_copy)        
+        return self._tuple
      
 class CircleDetection(Detection):
 
@@ -179,10 +212,13 @@ class CircleDetection(Detection):
             img.draw_cross(c.x()*2, c.y()*2, color = (0x1c, 0xa2, 0xff), thickness=2)
 
         if len(circle_list) > 0:
-            circle_tuple = find_max(circle_list)
-            global_value.img_global.draw_string(8, rows[self.row], ("Circle: %d %d %d" %(circle_tuple[0],circle_tuple[1],circle_tuple[2])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            self._tuple = find_max(circle_list)
+            global_value.img_global.draw_string(8, rows[self.row], ("Circle: %d %d %d" %(self._tuple[0], self._tuple[1], self._tuple[2])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            
         lcd.display(img)
-        return circle_list
+        del(img)
+        del(img_copy)        
+        return self._tuple
 
 class RectangleDetection(Detection):
 
@@ -198,42 +234,40 @@ class RectangleDetection(Detection):
             img.draw_rectangle((r.x()*2, r.y()*2, r.w()*2, r.h()*2), color = (0x1c, 0xa2, 0xff), thickness=2)
 
         if len(rectangle_list) > 0:
-            rectangle_tuple = find_max(rectangle_list)
-            global_value.img_global.draw_string(8, rows[self.row], ("Rect: %d,%d,%d,%d" % (rectangle_tuple[0],rectangle_tuple[1],rectangle_tuple[2],rectangle_tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            self._tuple = find_max(rectangle_list)
+            global_value.img_global.draw_string(8, rows[self.row], ("Rect: %d,%d,%d,%d" % (self._tuple[0], self._tuple[1], self._tuple[2], self._tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            
         lcd.display(img)
-        return rectangle_list
+        del(img)
+        del(img_copy)        
+        return self._tuple
 
 class FaceDetection(Detection):
 
     def __init__(self):
-        # Load Haar Cascade
-        # By default this will use all stages, lower stages is faster but less accurate.
         global_value.flag_disp_line = 1
         self.row = global_value.row
         global_value.row = global_value.row + 1
         self.face_cascade = image.HaarCascade("frontalface", stages=25)
 
     def get_detection_result(self):
-        # Capture snapshot
         img = snapshot()
         global_value.img_global = img
         img_copy = img.resize(120,160)
         img_copy = img_copy.to_grayscale()
-        # Find objects.
-        # Note: Lower scale factor scales-down the image more and detects smaller objects.
-        # Higher threshold results in a higher detection rate, with more false positives.
         faces_list = img_copy.find_features(self.face_cascade, threshold=0.3, scale_factor=1.25)
-        del(img_copy)
 
         for face in faces_list:
-            img.draw_rectangle((face[0]*2,face[1]*2,face[2]*2,face[3]*2), color = (0xff, 0xff, 0xff), thickness=3)
+            img.draw_rectangle((face[0]*2, face[1]*2, face[2]*2, face[3]*2), color = (0xff, 0xff, 0xff), thickness=3)
 
         if len(faces_list) > 0:
-            face_tuple = find_max(faces_list)
-            global_value.img_global.draw_string(8, rows[self.row], ("Face: %d,%d,%d,%d" % (face_tuple[0],face_tuple[1],face_tuple[2],face_tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            self._tuple = find_max(faces_list)
+            global_value.img_global.draw_string(8, rows[self.row], ("Face: %d,%d,%d,%d" % (self._tuple[0], self._tuple[1], self._tuple[2], self._tuple[3])), color=(0xff, 0xff, 0xff), scale=1.5, mono_space=False)
+            
         lcd.display(img)
         del(img)
-        return faces_list
+        del(img_copy)
+        return self._tuple
 
 class ColorTracking(object):
 
@@ -367,17 +401,9 @@ class ColorRecognition:
         elif argu == 11: #black
             rgbstatus = compare_lists(self.threshold, self.black)
             return rgbstatus
-            #if (self.rgb_value[0] < 100 and self.rgb_value[1] < 100 and self.rgb_value[2] < 100):
-            #    return True
-            #else:
-            #    return False
-        elif argu == 12:# white(234, 242, 240)
+        elif argu == 12:# white
             rgbstatus = compare_lists(self.threshold, self.white)
             return rgbstatus
-            #if (self.rgb_value[0] > 165 and self.rgb_value[1] > 165 and self.rgb_value[2] > 165):
-            #    return True
-            #else:
-            #    return False
 
 # line_following
 class Global_GRAYSCALE_THRESHOLD:
@@ -459,24 +485,25 @@ rectangle_detection=RectangleDetection()
 #face_detection=FaceDetection()
 #color_tracking = ColorTracking()
 color_recognition = ColorRecognition()
-
+apriltag_detection = AprilTagDetection()
 #0 - tuple, then the same for detections
 #color_tracking.initialize_color_tracking()
 
 while True:
-
+    load_img('first_boot.jpg')
     #circle_detection.get_detection_status()
     #circle_detection.get_detection_property(0) #maxtuple 0 1 2 3
     #color_recognition.recognize_color(1, 5) #check for red circle
 
     #rectangle_detection.get_detection_status()
     #rectangle_detection.get_detection_property(0) #maxtuple 0 1 2 3 4
-    print(color_recognition.recognize_color(1, 6)) #check for red circle
+    #print(color_recognition.recognize_color(1, 6)) #check for red circle
 
 
     #face_detection.get_detection_status()
     #face_detection.get_detection_property(0) #maxtuple
-    
+    #print(apriltag_detection.get_detection_status(1, 0))
+    #print(apriltag_detection.get_detection_property(1, 0))
     #color_tracking.get_object_property(color_tracking.threshold, 0) #maxtuple 0 1 2 3 4
     #draw_circle(300, 200, 10)
     #draw_rectangle_wh(100, 50, 160, 120)

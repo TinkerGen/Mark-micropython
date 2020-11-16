@@ -11,13 +11,14 @@ AM2301 = 21
 class DHT(object):
     def __init__(self, data_pin,Type=DHT11):
         self.Data_pin = data_pin
-        self._type = Type
         self.datapin = {2:21, 3:22, 4:23, 5:24, 6:GPIO.GPIOHS20, 7:15, 8:14, 9:13, 10:12, 11:11, 12:9, 13:3}
         self.__pinData = GPIO(self.datapin[data_pin], GPIO.OUT)
         self.firstreading = True
         self.__pinData.value(1)
         self._lastreadtime = 0
         self.data=[0]*5
+        self.temp = 0
+        self.humid = 0
 
     def read(self):
         i=0
@@ -83,21 +84,16 @@ class DHT(object):
         return False
         
     def readHumidity(self):
-        global DHT11
         if (self.read()):
-            if self._type==DHT11:
-                f = float(self.data[0])
-                f = f + float(self.data[1]/10)
-                return f
-        return ''
+            self.humid = float(self.data[0])
+            self.humid = self.humid + float(self.data[1]/10)
+        return self.humid
 
     def readTemperature(self):
         if (self.read()):
-            if self._type==DHT11:
-                f = float(self.data[2])
-                f = f + float(self.data[3]/10)
-                return f
-        return ''
+            self.temp = float(self.data[2])
+            self.temp = self.temp + float(self.data[3]/10)
+        return self.temp
 """            
 dht = DHT(6)
 for i in range(1000):
