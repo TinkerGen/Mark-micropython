@@ -1,8 +1,66 @@
 from fpioa_manager import *
+from gpio import speaker
 import os, Maix, lcd, image, time
 from Maix import FPIOA, GPIO
 import gc
 gc.threshold(65536)
+
+def play_xmas_song(_type=None):
+    base_duration = 50
+    
+    speaker(3, 10, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 10, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 10, 1/4)
+    time.sleep_ms((base_duration * 2));
+    speaker(3, 10, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 10, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 10, 1/4)
+    time.sleep_ms((base_duration * 2));
+    speaker(3, 10, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 12, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 8, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 9, 1/8)
+    time.sleep_ms((base_duration * 1));
+    speaker(3, 10, 1/2)
+    time.sleep_ms((base_duration * 3));
+    
+    if _type == "long":
+        speaker(3, 11, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 11, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 11, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 11, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 11, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 10, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 10, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 10, 1/16)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 10, 1/16)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 9, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 9, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 10, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 9, 1/8)
+        time.sleep_ms((base_duration * 1));
+        speaker(3, 12, 1/4)
+        time.sleep_ms((base_duration * 2));
+
 
 def exception_output(e):
     lcd.clear()
@@ -27,14 +85,16 @@ try:
     lcd.rotation(1)
 
     if first_boot:
-        lcd.display(image.Image('first_boot.jpg'))
+        lcd.display(image.Image('xmas.jpg'))
+        play_xmas_song("long")
         os.remove("/flash/first_boot")
         time.sleep(2)
         gc.collect()
         from preloaded import *
 
     else:
-        lcd.display(image.Image('logo.jpg'))
+        lcd.display(image.Image('xmas.jpg'))
+        play_xmas_song()
         start_time =  time.ticks_ms()
         while (time.ticks_ms() - start_time) < 500:
             if test_gpio.value() == 0:

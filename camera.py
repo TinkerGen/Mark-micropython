@@ -349,9 +349,9 @@ class ColorRecognition:
 
         detecth_type = len(dete_type)
 
-        if detecth_type == 3: # circle
+        if detecth_type == 4: # circle
             area = (dete_type[0]-dete_type[2], dete_type[1]-dete_type[2], 2*dete_type[2],  2*dete_type[2])
-        elif detecth_type == 4: # rectangle
+        elif detecth_type == 5: # rectangle
             w = dete_type[2]
             h = dete_type[3]
             Xmin = dete_type[0]-int(w/2)
