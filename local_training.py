@@ -27,13 +27,13 @@ class OnDeviceTraining(object):
         self.class_list=[]
         self.percent = 0
         self.image_class = 0
-        
+
         if bool:
-            self.model = kpu.load(0x800000)
+            self.model = kpu.load(0x514000)
             self.classifier = kpu.classifier(self.model, self.classnumber, self.samplesnumber)
         else:
-            pass    
-    
+            pass
+
     def classify_image(self, string):
         img = snapshot()
         self.img_copy = img.resize(224,224)
@@ -104,7 +104,7 @@ class OnDeviceTraining(object):
         f.close()
 
     def load_model_file(self, filename=''):
-        self.model = kpu.load(0x800000)
+        self.model = kpu.load(0x514000)
         classifier = kpu.classifier.load(self.model, filename)
         self.classifier = classifier[0]
         f = open(filename.split('.')[0]+'.names','r')
@@ -160,6 +160,3 @@ while True:
     modeltrain.is_class('a', 20)
 
 """
-
-
-

@@ -1,12 +1,13 @@
-
 from Maix import GPIO
-import utime, time
+import utime, time, image, lcd
 from Maix import FPIOA
 from machine import Timer,PWM
 from fpioa_manager import fm
 from fpioa_manager import *
 from modules import ultrasonic
 import network
+from camera import *
+
 # gpio
 def gpio_init():
     fm.register(21,fm.fpioa.GPIOHS21) # 2
@@ -21,28 +22,52 @@ def gpio_init():
     fm.register(11,fm.fpioa.GPIOHS11)
     fm.register(10,fm.fpioa.GPIOHS10)
     fm.register(3, fm.fpioa.GPIO3)    # 13
-    """#ADC
-    fm.register(25,fm.fpioa.GPIOHS25)#cs
-    fm.register(8, fm.fpioa.GPIOHS8)#rst
-    fm.register(9, fm.fpioa.GPIOHS9)#rdy
-    fm.register(28,fm.fpioa.GPIOHS18)#mosi
-    fm.register(26,fm.fpioa.GPIOHS16)#miso
-    fm.register(27,fm.fpioa.GPIOHS17)#sclk
-    """
-gpio = {2:GPIO.GPIOHS21, 3:GPIO.GPIOHS22, 4:GPIO.GPIOHS23, 5:GPIO.GPIOHS24, 6:GPIO.GPIOHS20,
-        7:GPIO.GPIOHS15, 8:GPIO.GPIOHS14, 9:GPIO.GPIOHS13, 10:GPIO.GPIOHS12, 11:GPIO.GPIOHS11, 
-        12:GPIO.GPIOHS10, 13:GPIO.GPIO3}
- 
+
+board_info =  {
+      'BOOT_KEY': 16,
+      'LED_R': 13,
+      'LED_G': 12,
+      'LED_B': 14,
+      'WIFI_TX': 6,
+      'WIFI_RX': 7,
+      'WIFI_EN': 8,
+      'MIC0_WS': 19,
+      'MIC0_DATA': 20,
+      'MIC0_BCK': 18,
+      'I2S_WS': 33,
+      'I2S_DA': 34,
+      'I2S_BCK': 35,
+      'ESP32_CS': 25,
+      'ESP32_RST': 8,
+      'ESP32_RDY': 9,
+      'ESP32_MOSI': 28,
+      'ESP32_MISO': 26,
+      'ESP32_SCLK': 27,
+       0:4,
+       1:5,
+       2:21,
+       3:22,
+       4:23,
+       5:24,
+       6:32,
+       7:15,
+       8:14,
+       9:13,
+       10:12,
+       11:11,
+       12:10,
+       13:3,
+  }
+
 def set_gpio_output(pin_number, status):
-    global gpio
-    _pin = gpio[pin_number] 
+    global board_info
+    _pin = board_info[pin_number]
     _pinObj = GPIO(_pin, GPIO.OUT, GPIO.PULL_NONE)
     _pinObj.value(status)
 
-
 def get_gpio_input(pin_number):
-    global gpio
-    _pin = gpio[pin_number]
+    global board_info
+    _pin = board_info[pin_number]
     _pinObj = GPIO(_pin, GPIO.IN, GPIO.PULL_NONE)
     return _pinObj.value()
 
@@ -75,7 +100,6 @@ def get_system_time_tick(time):
 
 gpio_init()
 
-
 # Grove one
 # button
 def DigitalIn_button(pin_number):
@@ -94,8 +118,8 @@ def tone(pin_number, frequency, duration):
     value = 50
     tim = Timer(Timer.TIMER2, Timer.CHANNEL0, mode=Timer.MODE_PWM)
     tim.start()
-    global gpio
-    _pin = gpio[pin_number]
+    global board_info
+    _pin = board_info[pin_number]
     PWM(tim, freq=frequency, duty=value, pin=_pin)
     utime.sleep_ms(duration)
     tim.stop()
@@ -108,7 +132,7 @@ def speaker(pin, melody, noteDurations):
         noteDuration = int(noteDurations*1000)
         utime.sleep_ms(noteDuration)
         return
-    listmelody = [0, 
+    listmelody = [0,
               262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494,     #c4-b4
               523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988,     #c5-b5
               1046,1109,1175,1245,1318,1397,1480,1568,1661,1760,1865,1976,    #c6-b6
@@ -120,9 +144,11 @@ def speaker(pin, melody, noteDurations):
     # divided by the note type.
     #e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
     noteDuration = int(listnoteDurations*1000)
+    lcd.display(image.Image('logo.jpg'))
+    lcd.draw_string(5, 15, 'Note is playing', lcd.RED, lcd.WHITE)
     tone(pin, listmelody[melody], noteDuration)
     #pause for the note's duration plus 30 ms
-    utime.sleep_ms(30)
+    #utime.sleep_ms(int(noteDuration*0.01))
 
 ultra_pin = {2:fm.fpioa.GPIOHS21, 3:fm.fpioa.GPIOHS22, 4:fm.fpioa.GPIOHS23,
     5:fm.fpioa.GPIOHS24, 6:fm.fpioa.GPIOHS20, 7:fm.fpioa.GPIOHS15,
@@ -142,10 +168,10 @@ def get_ultrasonic_distance(pin):
             return (distance)
     except:
         return 0
-        
+
 #RGB_LED
 class RGB_LED:
-    def __init__(self, clk, data, number_leds, clk_gpiohs=0, data_gpiohs=1 ):
+    def __init__(self, clk, data, number_leds, clk_gpiohs=0, data_gpiohs=1):
 
         #fm.register(clk, fm.fpioa.GPIOHS0)
         #fm.register(data, fm.fpioa.GPIOHS1)
@@ -253,33 +279,29 @@ def set_rgb_led(pin_number, R, G, B):
 #ADC
 class Analog_ADC:
     def __init__(self):
-        #ADC
+    
         fm.register(25,fm.fpioa.GPIOHS25)#cs
-        fm.register(8, fm.fpioa.GPIOHS8)#rst
-        fm.register(9, fm.fpioa.GPIOHS9)#rdy
-        fm.register(28,fm.fpioa.GPIOHS18)#mosi
-        fm.register(26,fm.fpioa.GPIOHS16)#miso
-        fm.register(27,fm.fpioa.GPIOHS17)#sclk
-        self.nic = network.ESP32_SPI(cs=fm.fpioa.GPIOHS25,rst=fm.fpioa.GPIOHS8,rdy=fm.fpioa.GPIOHS9,
-            mosi=fm.fpioa.GPIOHS18,miso=fm.fpioa.GPIOHS16,sclk=fm.fpioa.GPIOHS17)
+        fm.register(8,fm.fpioa.GPIOHS8)#rst
+        fm.register(9,fm.fpioa.GPIOHS9)#rdy
+        print("Use hardware SPI for other maixduino")
+        fm.register(28,fm.fpioa.SPI1_D0, force=True)#mosi
+        fm.register(26,fm.fpioa.SPI1_D1, force=True)#miso
+        fm.register(27,fm.fpioa.SPI1_SCLK, force=True)#sclk
+        self.nic = network.ESP32_SPI(cs=fm.fpioa.GPIOHS25, rst=fm.fpioa.GPIOHS8, rdy=fm.fpioa.GPIOHS9, spi=1)
+            
     def analogRead(self, adc_pin):
         try:
             self.adc_value = self.nic.adc()
             return (self.adc_value[adc_pin])
         except:
             return -1
+            
     def getAnalogAvg(self, pin):
         sum_adc = 0
         for i in range(10):
             reading = self.analogRead(pin)
-            if reading < 0: 
-                reading = self.analogRead(pin)           
+            if reading < 0:
+                reading = self.analogRead(pin)
             sum_adc = sum_adc + reading
         avg = sum_adc // 10
         return avg
-"""
-ADC = Analog_ADC()
-while True:
-    time.sleep(0.5)
-    ADC.getAnalogAvg(1)
-"""

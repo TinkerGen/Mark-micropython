@@ -2,7 +2,7 @@ import network, socket, time, utime, sensor, image, lcd, os
 from machine import UART
 from Maix import GPIO
 from maix_motor import Maix_motor
-from fpioa_manager import fm, board_info
+from fpioa_manager import fm
 import ujson
 
 lcd.display(image.Image('logo.jpg'))
@@ -12,25 +12,24 @@ for i in range(num_rows+3):
 	lcd.draw_string(5, i*15, msg[i*28:i*28+28], lcd.RED, lcd.WHITE)
 time.sleep(2)
 
+
 ########## config ################
 WIFI_SSID = 0
 WIFI_PASSWD = 0
-server_ip      = 0
-server_port    = 3456
+server_ip = 0
+server_port = 3456
 pan_angle = 90
 tilt_angle = 90
 bullet = 90
+
+fm.register(25,fm.fpioa.GPIOHS25)#cs
+fm.register(8,fm.fpioa.GPIOHS8)#rst
+fm.register(9,fm.fpioa.GPIOHS9)#rdy
+print("Use hardware SPI for other maixduino")
+fm.register(28,fm.fpioa.SPI1_D0, force=True)#mosi
+fm.register(26,fm.fpioa.SPI1_D1, force=True)#miso
+fm.register(27,fm.fpioa.SPI1_SCLK, force=True)#sclk
 ##################################
-
-# IO map for ESP32 on Maixduino
-fm.register(25,fm.fpioa.GPIOHS10)#cs
-fm.register(8,fm.fpioa.GPIOHS11)#rst
-fm.register(9,fm.fpioa.GPIOHS12)#rdy
-fm.register(28,fm.fpioa.GPIOHS13)#mosi
-fm.register(26,fm.fpioa.GPIOHS14)#miso
-fm.register(27,fm.fpioa.GPIOHS15)#sclk
-
-#lcd.init()
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
@@ -38,7 +37,7 @@ sensor.set_framesize(sensor.QVGA)
 sensor.set_vflip(2)
 lcd.rotation(1)
 
-nic = network.ESP32_SPI(cs=fm.fpioa.GPIOHS10,rst=fm.fpioa.GPIOHS11,rdy=fm.fpioa.GPIOHS12, mosi=fm.fpioa.GPIOHS13,miso=fm.fpioa.GPIOHS14,sclk=fm.fpioa.GPIOHS15)
+nic = network.ESP32_SPI(cs=fm.fpioa.GPIOHS25, rst=fm.fpioa.GPIOHS8, rdy=fm.fpioa.GPIOHS9, spi=1)
 print("ESP32_SPI firmware version:", nic.version())
 
 while not WIFI_SSID:

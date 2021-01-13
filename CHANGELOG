@@ -43,7 +43,7 @@
 20201013: cyberEye-20201013-2000.3000.4000.5015.kfpkg
 1) fixed bug when dht11 outputting an empty string if timeout
 
-20201104 : cyberEye-20201104-2000.3000.4000.5016.kfpkg
+20201104: cyberEye-20201104-2000.3000.4000.5016.kfpkg
 1) in case of multiple detections model inference should return the result with biggest area of ​​detection DONE
 2) minor interfaces changes in Codecraft(knapsack->backpack, smartphone->smartphone, etc) 
 3) fix for servo not accepting 180 degrees angle
@@ -52,5 +52,17 @@
 6) Increased distance for object detection 
 7) Added area output parameter to detection blocks
 
-20201222 : cyberEye-20201222-2000.3000.4000.5017.kfpkg
+20201222: cyberEye-20201222-2000.3000.4000.5017.kfpkg
 Merry Christmas!
+
+20210107: cyberEye-20210107-2000.3000.4000.5018.kfpkg
+1) add a visible notification "sound ... is playing" so user would now that MARK is not frozen 
+2) rectangle detection bug fix
+3) improving memory consumption and garbage collector logic
+4) added face recognition blocks and model
+5) added face keypoint detection blocks and model
+6) added NN face detection blocks and model
+7) added language switch and QR code for error messages
+8) updated MaixPy codebase to 88bfd01, made relevant changes to _boot.py, ESP32 ADC/Network, board_info
+9) ESP32 firmware updated to 1.4.1
+10) moved lego detection model to SPIFFS

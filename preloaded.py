@@ -1,16 +1,16 @@
-from gpio import *
 from modules import ws2812
 from maix_motor import Maix_motor
-import utime
 import time
 from camera import *
 from object_detection import *
+from gpio import speaker
 
 traffic_classes = ["limit_5","limit_80","no_forward","forward","left","right","u_turn","zebra","stop","yield"]
 traffic_anchor = (0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828)
-traffic_filename = 0x400000
+traffic_filename = 0x5f5000
 traffic = ObjectDetection(traffic_filename, traffic_classes, traffic_anchor, 1)
 
+circle_detection=CircleDetection()
 color_recognition = ColorRecognition()
 
 class globalvals:
@@ -18,7 +18,7 @@ class globalvals:
     i = 0
     result = 0
 
-ws2812_2 = ws2812(fm.board_info.D[13],5,2,3)
+ws2812_2 = ws2812(3,5,2,3)
 
 def start_handler_0():
     pass
@@ -54,7 +54,7 @@ def start_handler_0():
             Maix_motor.motor_run(0, 0, 0)
             if traffic.is_object("forward", 50):
                 globalvals.state = 2
-            if color_recognition.recognize_color(1, 6):
+            if color_recognition.recognize_color(circle_detection, 1, 6):
                 globalvals.state = 1
         
         if globalvals.state == 1:
@@ -65,7 +65,7 @@ def start_handler_0():
                     Maix_motor.motor_motion(1, 3, 0)
                 if Line_Finder(6, 1):
                     Maix_motor.motor_motion(1, 4, 0)
-            if color_recognition.recognize_color(1, 5):
+            if color_recognition.recognize_color(circle_detection, 1, 5):
                 globalvals.state = 0
         if globalvals.state == 2:
             globalvals.result = traffic.get_detection_results(50)

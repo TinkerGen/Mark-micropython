@@ -52,7 +52,7 @@ class ObjectDetection(object):
                     a=img.draw_rectangle(roi, color = (0x1c, 0xa2, 0xff), thickness=2)
                     percent = i.value()
                     object_detected = self.classes[i.classid()]
-                    a = img.draw_string(new_x, new_y-14, ("%s %%: %.2f" % (self.object_detected, self.percent)), color=(255,255,255), scale=1.5, mono_space=False)
+                    a = img.draw_string(new_x, new_y-14, ("%s %%: %.2f" % (object_detected, percent)), color=(255,255,255), scale=1.5, mono_space=False)
             self.x_center, self.y_center, self.area, self.percent, self.object_detected  = find_max(code)
             self.object_detected = self.classes[self.object_detected]
             

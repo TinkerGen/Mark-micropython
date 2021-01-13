@@ -9,11 +9,11 @@ class MaixS:
         self._angle_step = 1.8
         self._drive_rpm = 30
         time.sleep(0.1)
-
+        
     def read(self, reg_base, reg, buf):
         self.write(reg)
         time.sleep(.001)
-        self.i2c_device.readfrom_into(59,buf)
+        self.i2c_device.readfrom_into(59, buf)
 
     def write(self, buf=None):
         #print(buf)
@@ -34,20 +34,17 @@ class MaixS:
         cmd = bytearray([3, left_speed, right_speed, time & 0xFF, (time >> 8)])
         self.write(cmd)
 
-
     def motor_motion(self, speed, dir, time):
         if speed == 0 or speed > 3 or dir > 6 or dir == 0:
             return
         cmd = bytearray([4, speed, dir, time & 0xFF, (time >> 8)])
         self.write(cmd)
 
-
     def motor_left(self, left_speed, time):
         if abs(left_speed) > 100:
             return
         cmd = bytearray([6, left_speed, time & 0xFF, (time >> 8)])
         self.write(cmd)
-
 
     def motor_right(self, right_speed, time):
         if abs(right_speed) > 100:
@@ -85,6 +82,3 @@ class MaixS:
         self.motor_run(init_speed+steer, init_speed-steer, 1000)
 
 Maix_motor = MaixS()
-#Maix_motor.drive_set_step(1.8)
-#Maix_motor.drive_set_rpm(0)
-#Maix_motor.drive_run(200)
