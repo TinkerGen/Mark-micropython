@@ -6,7 +6,7 @@ rows = [x for x in range(300, 0, -10)]
 
 # Display
 def lcd_display_string_row(string, row):
-    if row < 1 or row > 23:
+    if row < 1 or row > 31:
         return False
     lcd.draw_string(0,(row-1)*10, str(string), lcd.RED, lcd.WHITE)
 

@@ -3,7 +3,7 @@ from maix_motor import Maix_motor
 import time
 from camera import *
 from object_detection import *
-from gpio import speaker
+from gpio import *
 
 traffic_classes = ["limit_5","limit_80","no_forward","forward","left","right","u_turn","zebra","stop","yield"]
 traffic_anchor = (0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828)
@@ -18,7 +18,7 @@ class globalvals:
     i = 0
     result = 0
 
-ws2812_2 = ws2812(3,5,2,3)
+ws2812_2 = ws2812(3, 5, 2, 3)
 
 def start_handler_0():
     pass

@@ -1,5 +1,5 @@
 from Maix import GPIO
-import utime, time, image, lcd
+import time, image, lcd
 from Maix import FPIOA
 from machine import Timer,PWM
 from fpioa_manager import fm
@@ -8,26 +8,16 @@ from modules import ultrasonic
 import network
 from camera import *
 
-# gpio
-def gpio_init():
-    fm.register(21,fm.fpioa.GPIOHS21) # 2
-    fm.register(22,fm.fpioa.GPIOHS22)
-    fm.register(23,fm.fpioa.GPIOHS23)
-    fm.register(24,fm.fpioa.GPIOHS24)
-    fm.register(32,fm.fpioa.GPIOHS20) #6
-    fm.register(15,fm.fpioa.GPIOHS15)
-    fm.register(14,fm.fpioa.GPIOHS14)
-    fm.register(13,fm.fpioa.GPIOHS13)
-    fm.register(12,fm.fpioa.GPIOHS12)
-    fm.register(11,fm.fpioa.GPIOHS11)
-    fm.register(10,fm.fpioa.GPIOHS10)
-    fm.register(3, fm.fpioa.GPIO3)    # 13
-
 board_info =  {
+      'hardware': 
+      {
       'BOOT_KEY': 16,
       'LED_R': 13,
       'LED_G': 12,
       'LED_B': 14,
+      },
+      'interfaces':
+      {
       'WIFI_TX': 6,
       'WIFI_RX': 7,
       'WIFI_EN': 8,
@@ -43,31 +33,51 @@ board_info =  {
       'ESP32_MOSI': 28,
       'ESP32_MISO': 26,
       'ESP32_SCLK': 27,
+      },
+      'gpio':
+      {
        0:4,
        1:5,
-       2:21,
-       3:22,
-       4:23,
-       5:24,
-       6:32,
-       7:15,
-       8:14,
-       9:13,
-       10:12,
-       11:11,
-       12:10,
-       13:3,
+       2: GPIO.GPIOHS21,
+       3: GPIO.GPIOHS22,
+       4: GPIO.GPIOHS23,
+       5: GPIO.GPIOHS24,
+       6: GPIO.GPIOHS20,
+       7: GPIO.GPIOHS15,
+       8: GPIO.GPIOHS14,
+       9: GPIO.GPIOHS13,
+       10: GPIO.GPIOHS12,
+       11: GPIO.GPIOHS11,
+       12: GPIO.GPIOHS10,
+       13: GPIO.GPIO3,
+      }
   }
+
+# gpio
+def gpio_init():
+
+    fm.register(21,fm.fpioa.GPIOHS21) # 2
+    fm.register(22,fm.fpioa.GPIOHS22)
+    fm.register(23,fm.fpioa.GPIOHS23)
+    fm.register(24,fm.fpioa.GPIOHS24)
+    fm.register(32,fm.fpioa.GPIOHS20) #6
+    fm.register(15,fm.fpioa.GPIOHS15)
+    fm.register(14,fm.fpioa.GPIOHS14)
+    fm.register(13,fm.fpioa.GPIOHS13)
+    fm.register(12,fm.fpioa.GPIOHS12)
+    fm.register(11,fm.fpioa.GPIOHS11)
+    fm.register(10,fm.fpioa.GPIOHS10)
+    fm.register(3, fm.fpioa.GPIO3)    # 13
 
 def set_gpio_output(pin_number, status):
     global board_info
-    _pin = board_info[pin_number]
+    _pin = board_info['gpio'][pin_number]
     _pinObj = GPIO(_pin, GPIO.OUT, GPIO.PULL_NONE)
     _pinObj.value(status)
 
 def get_gpio_input(pin_number):
     global board_info
-    _pin = board_info[pin_number]
+    _pin = board_info['gpio'][pin_number]
     _pinObj = GPIO(_pin, GPIO.IN, GPIO.PULL_NONE)
     return _pinObj.value()
 
@@ -94,11 +104,9 @@ def MaixAnalogWrite(pin_number, pwm_value):
 
 def get_system_time_tick(time):
     if time == 1:
-        return utime.ticks_ms()
+        return time.ticks_ms()
     elif time == 2:
-        return utime.ticks_us()
-
-gpio_init()
+        return time.ticks_us()
 
 # Grove one
 # button
@@ -115,13 +123,13 @@ def Line_Finder(pin_number, argument):
 
 #speaker
 def tone(pin_number, frequency, duration):
+    global board_info
     value = 50
     tim = Timer(Timer.TIMER2, Timer.CHANNEL0, mode=Timer.MODE_PWM)
     tim.start()
-    global board_info
-    _pin = board_info[pin_number]
+    _pin = board_info['gpio'][pin_number]
     PWM(tim, freq=frequency, duty=value, pin=_pin)
-    utime.sleep_ms(duration)
+    time.sleep_ms(duration)
     tim.stop()
 
 # 0 :stop 1-36: piano 37-58 : C3-B5
@@ -130,15 +138,48 @@ def speaker(pin, melody, noteDurations):
         tim = Timer(Timer.TIMER2, Timer.CHANNEL0, mode=Timer.MODE_PWM)
         tim.stop()
         noteDuration = int(noteDurations*1000)
-        utime.sleep_ms(noteDuration)
+        time.sleep_ms(noteDuration)
         return
+        
     listmelody = [0,
-              262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494,     #c4-b4
-              523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988,     #c5-b5
-              1046,1109,1175,1245,1318,1397,1480,1568,1661,1760,1865,1976,    #c6-b6
-              131, 147, 165, 175, 196, 220, 247,
-              262, 294, 330, 349, 392, 440, 494,
-              523, 587, 659, 698, 784, 880, 980, ]
+    131, 147, 165, 175, 196, 220, 247,  #3, 1 - 7
+    262, 294, 330, 349, 392, 440, 494,  #4, 8 - 14
+    523, 587, 659, 698, 784, 880, 988,  #5, 15 - 21
+    
+    139, # C#3, 22
+    156, # Eb3, 23
+    185, # F#3, 24
+    208, # G#3, 25
+    233, # Bb3, 26
+    
+    277, # C#4, 27
+    311, # Eb4, 28
+    370, # F#4, 29
+    415, # G#4, 30
+    466, # Bb4, 31
+    
+    555, # C#5, 32
+    622, # Eb5, 33
+    740, # F#5, 34
+    831, # G#5, 35
+    932, # Bb5, 36
+    
+    1047, 1175, 1319, 1397, 1568, 1760, 1976, #6, 37 - 43
+    2093, 2349, 2637, 2794, 3136, 3520, 3951, #7, 44 - 50
+
+    1109, # C#6, 52
+    1245, # Eb6, 53
+    1480, # F#6, 54
+    1661, # G#6, 55
+    1865, # Bb6, 56
+    
+    2217, # C#7, 57
+    2489, # Eb6, 58
+    2960, # F#6, 59
+    3322, # G#6, 60
+    3729 # Bb6, 61
+    ]
+
     listnoteDurations = noteDurations
     # to calculate the note duration, take one second
     # divided by the note type.
@@ -305,3 +346,18 @@ class Analog_ADC:
             sum_adc = sum_adc + reading
         avg = sum_adc // 10
         return avg
+
+
+gpio_init()
+
+# Unit tests
+if __name__ == "__main__":
+    speaker(3, 1, 1)
+    speaker(3, 8, 1)
+    speaker(3, 15, 1)
+    speaker(3, 4, 1)
+    speaker(3, 11, 1)
+    speaker(3, 18, 1)
+    speaker(3, 7, 1)
+    speaker(3, 14, 1)
+    speaker(3, 21, 1)

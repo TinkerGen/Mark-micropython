@@ -66,3 +66,9 @@ Merry Christmas!
 8) updated MaixPy codebase to 88bfd01, made relevant changes to _boot.py, ESP32 ADC/Network, board_info
 9) ESP32 firmware updated to 1.4.1
 10) moved lego detection model to SPIFFS
+
+2021042: cyberEye-20210428-2000.3000.4000.5019.kfpkg
+1) D5/D6 pin usage fixed
+2) notes are played properly now
+3) add more lines to the display string
+4) added dual language notification to backup restore
