@@ -8,14 +8,17 @@ import gc
 lang = 'en'
 
 gc.threshold(1024*64)
-utils.gc_heap_size(1024*768)
 kpu.memtest()
 
 def draw_on_image(img_file, string, pos_x, pos_y, size = 1, space = 1):
 
     chunks, chunk_size = len(string), 28
     msg_lines = [string[i:i+chunk_size]for i in range(0, chunks, chunk_size)]
-    img = image.Image(img_file)
+    try:
+        img = image.Image(img_file)
+    except:
+        img = image.Image()
+
     for line in msg_lines:
         a = img.draw_string(pos_x, pos_y, line, scale=size, color=(255,0,0), x_spacing=1, mono_space=space)
         pos_y += 18
@@ -24,34 +27,30 @@ def draw_on_image(img_file, string, pos_x, pos_y, size = 1, space = 1):
 
 interface_strings = {
     'zh':{
-    'Restoring backup. Hold on.': b'正在恢复备份,请不要关机机器！',
-    'Restore backup sucessful. Please reboot MARK': b'恢复备份成功,请重新启动机器！',
+    'Reading user code failed. Clearing user code': b'正在恢复备份,请不要关机机器！',
+    'Clearing user code sucessful. Please reboot MARK and upload your code again': b'恢复备份成功,请重新启动机器！',
     "EIO Error - please turn on the power switch and reboot MARK": b'EIO输入输出错误,请打开开关重新启动机器！',
     "First boot": b'初始化中',
     "Scan QR code to access online documentation": b'扫二维码访问柴火创客教育在线文档',
     },
 
     'en':{
-    'Restoring backup. Hold on.': 'Restoring backup. Hold on.',
-    'Restore backup sucessful. Please reboot MARK': 'Restore backup sucessful. Please reboot MARK',
+    'Reading user code failed. Clearing user code': 'Reading user code failed. Clearing user code',
+    'Clearing user code sucessful. Please reboot MARK and upload your code again': 'Clearing user code sucessful. Please reboot MARK and upload your code again',
     "EIO Error - please turn on the power switch and reboot MARK": "EIO Error - please turn on the power switch and reboot MARK",
     "First boot": "First boot",
     "Scan QR code to access online documentation": "Scan QR code to access online documentation",
     }
 }
 
-def restore_backup(filename='camera.py'):
+def restore_backup(filename='user.py'):
     global lang, interface_strings
 
-    draw_on_image('/flash/backup.jpg', interface_strings[lang]['Restoring backup. Hold on.'], 10, 10, space = (lang == 'zh'))
+    draw_on_image('/flash/backup.jpg', interface_strings[lang]['Reading user code failed. Clearing user code'], 10, 10, space = (lang == 'zh'))
     os.remove(filename)
-    backup_file = open(filename+".bak", 'r')
-    backup = backup_file.read()
-    backup_file.close()
     f = open(filename, 'w')
-    f.write(backup)
     f.close()
-    draw_on_image('/flash/backup.jpg', interface_strings[lang]['Restore backup sucessful. Please reboot MARK'], 10, 10, space = (lang == 'zh'))
+    draw_on_image('/flash/backup.jpg', interface_strings[lang]['Clearing user code sucessful. Please reboot MARK and upload your code again'], 10, 10, space = (lang == 'zh'))
     sys.exit()
 
 def exception_output(e):
@@ -75,9 +74,11 @@ def exception_output(e):
         draw_on_image(pic_path, interface_strings[lang]["EIO Error - please turn on the power switch and reboot MARK"], 10, 10 , space = (lang == 'zh') )
         sys.exit()
     elif str(e) == "[Errno 5] EIO":
-        restore_backup(filename='camera.py')
-
-    img = image.Image(pic_path)
+        restore_backup(filename='user.py')
+    try:
+        img = image.Image(pic_path)
+    except:
+        img = image.Image()
 
     image.font_free()
 
@@ -93,7 +94,7 @@ try:
     boot_pressed = 0
     fpioa = FPIOA()
     fpioa.set_function(16, FPIOA.GPIO7)
-    test_gpio = GPIO(GPIO.GPIO7, GPIO.IN)
+    test_gpio = GPIO(GPIO.GPIO7, GPIO.IN, GPIO_PULLUP)
 
     lcd.init()
     lcd.rotation(1)
@@ -126,3 +127,4 @@ try:
 except Exception as e:
     exception_output(e)
     raise
+
