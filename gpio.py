@@ -185,9 +185,10 @@ def speaker(pin, melody, noteDurations):
     # divided by the note type.
     #e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
     noteDuration = int(listnoteDurations*1000)
-    lcd.display(image.Image('logo.jpg'))
-    lcd.draw_string(5, 15, 'Note is playing', lcd.RED, lcd.WHITE)
+    lcd.display(image.Image('music.jpg'))
+    #lcd.draw_string(5, 15, 'Note is playing', lcd.RED, lcd.WHITE)
     tone(pin, listmelody[melody], noteDuration)
+    lcd.display(image.Image('logo.jpg'))
     #pause for the note's duration plus 30 ms
     #utime.sleep_ms(int(noteDuration*0.01))
 
