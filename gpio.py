@@ -329,7 +329,7 @@ class Analog_ADC:
         fm.register(28,fm.fpioa.SPI1_D0, force=True)#mosi
         fm.register(26,fm.fpioa.SPI1_D1, force=True)#miso
         fm.register(27,fm.fpioa.SPI1_SCLK, force=True)#sclk
-        time.sleep(1)
+        time.sleep(1.5)
 
         self.nic = network.ESP32_SPI(cs=fm.fpioa.GPIOHS25, rst=fm.fpioa.GPIOHS8, rdy=fm.fpioa.GPIOHS9, spi=1)
             

@@ -94,7 +94,7 @@ try:
     boot_pressed = 0
     fpioa = FPIOA()
     fpioa.set_function(16, FPIOA.GPIO7)
-    test_gpio = GPIO(GPIO.GPIO7, GPIO.IN, GPIO_PULLUP)
+    test_gpio = GPIO(GPIO.GPIO7, GPIO.IN, GPIO.PULL_UP)
 
     lcd.init()
     lcd.rotation(1)
