@@ -1,5 +1,5 @@
 from machine import I2C
-import time
+import time,lcd, image
 
 Mark_i2c_address = 0x58
 
@@ -9,7 +9,13 @@ class MaixS:
         self._angle_step = 1.8
         self._drive_rpm = 30
         time.sleep(0.1)
-        
+        cmd = bytearray([0xe3])
+        self.i2c_device.writeto(Mark_i2c_address, cmd)
+        buf = self.i2c_device.readfrom(Mark_i2c_address, 2)
+        if buf[1] <= 26:
+	        lcd.display(image.Image('vol_low.jpg'))
+	        sys.exit()
+
     def read(self, reg_base, reg, buf):
         self.write(reg)
         time.sleep(.001)
