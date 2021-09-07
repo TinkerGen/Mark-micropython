@@ -1,5 +1,5 @@
 from machine import I2C
-import time,lcd, image
+import time, lcd, image, sys
 
 Mark_i2c_address = 0x58
 
