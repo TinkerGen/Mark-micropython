@@ -142,9 +142,11 @@ def camera_init():
     sensor.set_framesize(sensor.QVGA)
     # ov2640 id:9794 ,ov5642 id:22082
     if sensor.get_id() == 9794:
-        sensor.set_vflip(2)
+        sensor.set_hmirror(1)
+        sensor.set_vflip(1)
     else:
-        sensor.set_vflip(0)
+        sensor.set_hmirror(0)
+        sensor.set_vflip(1)
     lcd.rotation(1)
 
 class Detection:

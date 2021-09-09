@@ -3,7 +3,7 @@ import machine
 import ujson
 
 DEFAULT_PRODUCT_NAME = 'cyberEye'
-DEFAULT_PRODUCT_VERSION = '2000.3000.4000.5020' 
+DEFAULT_PRODUCT_VERSION = '2000.3000.4000.5021' 
 DEFAULT_LANGUAGE = 'en'
 
 def registe_event_task(event_task):
