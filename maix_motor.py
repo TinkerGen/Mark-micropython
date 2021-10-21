@@ -9,10 +9,13 @@ class MaixS:
         self._angle_step = 1.8
         self._drive_rpm = 30
         time.sleep(0.1)
-        cmd = bytearray([0xe3])
+        cmd = bytearray([0xe2])
         self.i2c_device.writeto(Mark_i2c_address, cmd)
         buf = self.i2c_device.readfrom(Mark_i2c_address, 2)
-        if buf[1] <= 26:
+        cmd = bytearray([0xe3])
+        self.i2c_device.writeto(Mark_i2c_address, cmd)
+        buf1 = self.i2c_device.readfrom(Mark_i2c_address, 2)
+        if buf1[1] <= 26 and buf[0] >= 6:
 	        lcd.display(image.Image('vol_low.jpg'))
 	        sys.exit()
 
